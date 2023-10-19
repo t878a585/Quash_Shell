@@ -10,6 +10,6 @@ parser.tab.c : parser.y
 	bison -d parser.y
 
 clean:
-	rm *.o quash
+	rm *.o quash parser.tab.c parser.tab.h lex.yy.c
 
 .PHONY : clean
