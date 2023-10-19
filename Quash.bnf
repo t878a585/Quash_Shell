@@ -1,0 +1,7 @@
+<commands> ::= <commands> <PIPE> <command> | <command>
+
+<command> ::= <arguments>
+
+<arguments> ::= <arguments> <string> | <string>
+
+<string> ::= <NON_QUOTED_STRING> | <SINGLE_QUOTED_STRING> | <DOUBLE_QUOTED_STRING>

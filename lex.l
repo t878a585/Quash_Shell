@@ -1,27 +1,23 @@
 %{
 
 #include <stdio.h>
-#include <string.h>
-
-#define NON_QUOTED_STRING 298
-#define SINGLE_QUOTED_STRING 299
-#define DOUBLE_QUOTED_STRING 300
-#define PIPE 301
-#define WHITE_SPACE 302
+#include "parser.tab.h"
 
 %}
 
 %%
 
-([^ \"'\|\\]|(\\[ ])|(\\\")|(\\')|(\\\|)|(\\\\))* { printf("NON_QUOTED_STRING "); return NON_QUOTED_STRING; }
+([^ \"'\|\\\n]|(\\[ ])|(\\\")|(\\')|(\\\|)|(\\\\)|(\\n))* { yylval.string = strdup(yytext); return NON_QUOTED_STRING; }
 
-'[^']*' {printf("SINGLE_QUOTED_STRING "); return SINGLE_QUOTED_STRING;}
+'[^'\n]*' { yylval.string = strdup(yytext); return SINGLE_QUOTED_STRING;}
 
-\"([^\\\"]|(\\\")|(\\\\))*\" {printf("DOUBLE_QUOTED_STRING "); return DOUBLE_QUOTED_STRING;}
+\"([^\\\"\n]|(\\\")|(\\\\)|(\\n))*\" { yylval.string = strdup(yytext); return DOUBLE_QUOTED_STRING;}
 
-"|" { printf("PIPE "); return PIPE;}
+"|" { return PIPE;}
 
-[ \n\t]* {printf("WHITE_SPACE ");}
+[ \t]* {}
+
+[\n] { return NEWLINE;}
 
 %%
 
@@ -31,17 +27,18 @@ int yywrap () {
 
 /*
 
-([^ \"'\|\\]|(\\[ ])|(\\\")|(\\')|(\\\|)|(\\\\))* { printf("NON_QUOTED_STRING "); return NON_QUOTED_STRING; }
 
-All characters but spaces, double quotes, single quotes, pieps and escapes are allowed. They can only be used if escape character preceeds them.
+([^ \"'\|\\\n]|(\\[ ])|(\\\")|(\\')|(\\\|)|(\\\\)|(\\n))* { printf("NON_QUOTED_STRING");yylval.string = strdup(yytext); return NON_QUOTED_STRING; }
+
+All characters but spaces, double quotes, single quotes, pipes, escapes, and newlines are allowed. They can only be used if escape character preceeds them except with with newlines which require an escape before an n character.
 
 '[^']*' {printf("SINGLE_QUOTED_STRING "); return SINGLE_QUOTED_STRING;}
 
 All characters are allowed but single quotes.
 
-\"([^\\\"]|(\\\")|(\\\\))*\" {printf("DOUBLE_QUOTED_STRING "); return DOUBLE_QUOTED_STRING;}
+\"([^\\\"\n]|(\\\")|(\\\\)|(\\n))*\" {printf("DOUBLE_QUOTED_STRING "); return DOUBLE_QUOTED_STRING;}
 
-All characters are allowed except for quotes and escapes. If an escape character preceeds, quotes and escape characters are allowed.
+All characters are allowed except for quotes, escapes, and newlines. If an escape character preceeds, quotes and escape characters are allowed. If '\n' is present, it will be interpretted as a newline.
 
 "|" { printf("PIPE "); return PIPE;}
 
