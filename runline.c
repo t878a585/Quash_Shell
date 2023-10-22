@@ -37,7 +37,7 @@ pid_t fork_And_Run(struct command c, int pipes_Count, int * pipes) {
 			close_All_Pipes_But(pipes_Count, pipes, c.std, c.sti);
 			free(pipes);
 		}
-
+		
 		execvp(c.executable, c.argv);
 	} else {
 		return p;

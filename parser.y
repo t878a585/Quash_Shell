@@ -16,7 +16,6 @@ void yyerror(const char * s) {return;}
 %token SINGLE_QUOTED_STRING
 %token DOUBLE_QUOTED_STRING
 %token PIPE
-%token NEWLINE
 
 %start start
 
@@ -32,8 +31,7 @@ void yyerror(const char * s) {return;}
 
 %%
 
-start: commands NEWLINE {parsed_Commands = $1;}
-	| NEWLINE {parsed_Commands = (char ***) 0;}
+start: commands {parsed_Commands = $1;}
 ;
 
 commands: commands PIPE command {$$ = create_Commands_And_Destroy_Old($1, $3);} 

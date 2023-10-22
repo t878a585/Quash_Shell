@@ -17,7 +17,7 @@
 
 [ \t]* {}
 
-[\n] { return NEWLINE;}
+[\n] { return 0;}
 
 %%
 
