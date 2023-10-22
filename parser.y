@@ -33,6 +33,8 @@ void yyerror(const char * s) {return;}
 %%
 
 start: commands NEWLINE {parsed_Commands = $1;}
+	| NEWLINE {parsed_Commands = (char ***) 0;}
+;
 
 commands: commands PIPE command {$$ = create_Commands_And_Destroy_Old($1, $3);} 
 	| command {$$ = create_Commands_From_Arguments($1);}
@@ -54,7 +56,11 @@ string: NON_QUOTED_STRING {$$ = non_Quotes_To_String($1); free($1);}
 
 int main () {
 	while(1) {
+		printf("[QUASH]$ ");
 		yyparse();
+
+		if (parsed_Commands == (char ***) 0) continue;
+
 		execute_And_Free_Commands(parsed_Commands);
 	}
 	

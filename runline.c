@@ -60,6 +60,8 @@ int * create_And_Allocate_Pipes(int n) {
 	int * pipes = (int *) malloc(sizeof(int) * (2*n));
 
 	create_Pipes(n, pipes);
+	
+	return pipes;
 }
 
 pid_t * fork_And_Run_All(struct commands * cs) {
@@ -106,7 +108,7 @@ void runcmds(struct commands * cs) {
 }
 
 struct command arguments_To_Command(char ** arguments) {
-	struct command c = {.executable=arguments[0], .argv=arguments+1};
+	struct command c = {.executable=arguments[0], .argv=arguments};
 	
 	return c;
 }
@@ -120,8 +122,8 @@ void free_Commands(char *** commands) {
 	for (int i = 0; commands[i] != (char **) 0; i++) {
 		char ** arguments = commands[i];
 
-		for (int j = 0; arguments[i] != (char *) 0; i++) {
-			free((void *) arguments[i]);
+		for (int j = 0; arguments[j] != (char *) 0; j++) {
+			free((void *) arguments[j]);
 		}
 
 		free((void *) arguments);
