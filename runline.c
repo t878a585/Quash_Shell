@@ -3,18 +3,12 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <stdbool.h>
+
+#include "shared_datatypes.h"
+
 #include "parser_helper.h"
-
-struct command {
-	char * executable;
-	char ** argv;
-	int std, sti;	
-};
-
-struct commands {
-	int count;
-	struct command * commands;
-};
+#include "builtin.h"
 
 void close_All_Pipes_But(int n, int * pipes, int pfd_One, int pfd_Two) {
 	for (int i = 0; i < n*2; i++) {
@@ -24,21 +18,43 @@ void close_All_Pipes_But(int n, int * pipes, int pfd_One, int pfd_Two) {
 	}
 }
 
-pid_t fork_And_Run(struct command c, int pipes_Count, int * pipes) {
+bool * allocate_Pipes_Keep_Open(int pipes_Count) {
+	bool * keep_Open = malloc(sizeof(bool) * pipes_Count);
+
+	for (int i = 0; i < pipes_Count; i++) {
+		keep_Open[i] = false;
+	}
+
+	return keep_Open;
+}
+
+pid_t fork_And_Run(struct command * c, int pipes_Count, int * pipes, bool * pipes_Keep_Open) {
+	if (hook(c)) {
+		if (pipes_Count == 0) return 0;
+
+		for (int i = 0; i < pipes_Count; i++) {
+			if (pipes[i] == c->std || pipes[i] == c->sti) {
+				pipes_Keep_Open[i] = true;
+			}
+		}
+
+		return 0;
+	}
+
 	pid_t p = fork();
 	
 	if (p == 0) {
-		if (c.std != 1 && c.sti != 0) {
-			dup2(c.std, 1);
-			dup2(c.sti, 0);
+		if (c->std != 1 && c->sti != 0) {
+			dup2(c->std, 1);
+			dup2(c->sti, 0);
 		}
 		
 		if (pipes != (int *)0) {
-			close_All_Pipes_But(pipes_Count, pipes, c.std, c.sti);
+			close_All_Pipes_But(pipes_Count, pipes, c->std, c->sti);
 			free(pipes);
 		}
 		
-		execvp(c.executable, c.argv);
+		execvp(c->executable, c->argv);
 	} else {
 		return p;
 	}
@@ -50,9 +66,9 @@ void create_Pipes(int n, int * pipes) {
 	}
 }
 
-void close_Pipes(int n, int * pipes) {
+void close_Pipes(int n, int * pipes, bool * keep_Pipes_Open) {
 	for (int i = 0; i < n * 2; i++) {
-		close(pipes[i]);
+		if(!keep_Pipes_Open[i]) close(pipes[i]);
 	}
 }
 
@@ -71,13 +87,14 @@ pid_t * fork_And_Run_All(struct commands * cs) {
 		(cs->commands[0]).std = 1;
 		(cs->commands[0]).sti = 0;
 		
-		cpids[0] = fork_And_Run(cs->commands[0], 0, (int *) 0);
+		cpids[0] = fork_And_Run(&cs->commands[0], 0, (int *) 0, 0);
 		
 		return cpids;
 	}
 	
 	int pipe_Count = cs->count - 1;
 	int * pipes = create_And_Allocate_Pipes(pipe_Count);
+	bool * pipes_Keep_Open = allocate_Pipes_Keep_Open(pipe_Count);
 	
 	for (int i = 0; i < cs->count; i++) {
 		if (i != cs->count - 1) {(cs->commands[i]).std = pipes[1 + (i * 2)];}
@@ -86,11 +103,12 @@ pid_t * fork_And_Run_All(struct commands * cs) {
 	}
 	
 	for (int i = 0; i < cs->count; i++) {
-		cpids[i] = fork_And_Run(cs->commands[i], pipe_Count, pipes); 
+		cpids[i] = fork_And_Run(&cs->commands[i], pipe_Count, pipes, pipes_Keep_Open); 
 	}
 
-	close_Pipes(pipe_Count, pipes);
-	free(pipes);
+	close_Pipes(pipe_Count, pipes, pipes_Keep_Open);
+	free((void *) pipes_Keep_Open);
+	free((void *) pipes);
 
 	return cpids;
 }
@@ -98,8 +116,10 @@ pid_t * fork_And_Run_All(struct commands * cs) {
 void runcmds(struct commands * cs) {
 	pid_t * pids = fork_And_Run_All(cs);
 	
+	wait_On_Hooked();
+
 	for (int i = 0; i < cs->count; i++) {
-		waitpid(pids[i], NULL, 0);	
+		if (pids[i] != 0) waitpid(pids[i], NULL, 0);	
 	}
 
 	free((void *) pids);

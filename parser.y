@@ -55,11 +55,13 @@ string: NON_QUOTED_STRING {$$ = non_Quotes_To_String($1); free($1);}
 int main () {
 	while(1) {
 		printf("[QUASH]$ ");
+		fflush(stdout);
 		yyparse();
 
 		if (parsed_Commands == (char ***) 0) continue;
 
 		execute_And_Free_Commands(parsed_Commands);
+		parsed_Commands = (char ***) 0;
 	}
 	
 }
