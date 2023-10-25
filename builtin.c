@@ -53,7 +53,6 @@ void * echo(void * args) {
 
 void * pwd(void * args) {
 	struct command * c = (struct command *) args;
-	close_If_Not_Stdio(c->sti);
 	FILE * stdout_File = fdopen(c->std, "a");
 
 	char * current_Directory = getcwd((char *) 0, 0);
@@ -63,6 +62,7 @@ void * pwd(void * args) {
 
 	free((void *) current_Directory);
 	close_If_Not_Stdio(c->std);
+	close_If_Not_Stdio(c->sti);
 }
 
 void * cd(void * args) {

@@ -32,7 +32,7 @@ pid_t fork_And_Run(struct command * c, int pipes_Count, int * pipes, bool * pipe
 	if (hook(c)) {
 		if (pipes_Count == 0) return 0;
 
-		for (int i = 0; i < pipes_Count; i++) {
+		for (int i = 0; i < pipes_Count * 2; i++) {
 			if (pipes[i] == c->std || pipes[i] == c->sti) {
 				pipes_Keep_Open[i] = true;
 			}
