@@ -36,6 +36,16 @@ void clear_Threads() {
 
 void * echo(void * args) {
 	struct command * c = (struct command *) args;
+	FILE * stdout_File = fdopen(c->std, "a");
+		
+	for (int i = 1; c->argv[i] != (char *) 0; i++) {
+		if (i == 1) {fprintf(stdout_File, "%s", c->argv[i]);} else {
+			fprintf(stdout_File, " %s", c->argv[i]);
+		}
+		
+	}
+	
+	fprintf(stdout_File, "\n");
 
 	close_If_Not_Stdio(c->sti);
 	close_If_Not_Stdio(c->std);
