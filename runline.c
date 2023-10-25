@@ -44,10 +44,9 @@ pid_t fork_And_Run(struct command * c, int pipes_Count, int * pipes, bool * pipe
 	pid_t p = fork();
 	
 	if (p == 0) {
-		if (c->std != 1 && c->sti != 0) {
-			dup2(c->std, 1);
-			dup2(c->sti, 0);
-		}
+		if (c->std != 1) dup2(c->std, 1);
+		if (c->sti != 0) dup2(c->sti, 0);
+		
 		
 		if (pipes != (int *)0) {
 			close_All_Pipes_But(pipes_Count, pipes, c->std, c->sti);
@@ -84,9 +83,6 @@ pid_t * fork_And_Run_All(struct commands * cs) {
 	pid_t * cpids = (pid_t *) malloc(sizeof(pid_t) * (cs->count));
 
 	if (cs->count == 1) {
-		(cs->commands[0]).std = 1;
-		(cs->commands[0]).sti = 0;
-		
 		cpids[0] = fork_And_Run(&cs->commands[0], 0, (int *) 0, 0);
 		
 		return cpids;
@@ -128,7 +124,7 @@ void runcmds(struct commands * cs) {
 }
 
 struct command arguments_To_Command(char ** arguments) {
-	struct command c = {.executable=arguments[0], .argv=arguments};
+	struct command c = {.executable=arguments[0], .argv=arguments, .sti=0, .std=1};
 	
 	return c;
 }
