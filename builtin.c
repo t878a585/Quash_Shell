@@ -80,15 +80,38 @@ void * cd(void * args) {
 	close_If_Not_Stdio(c->std);
 }
 
+
+void terminate() {
+	exit(0);
+}
+
 char * hooked[] = {"echo", "pwd", "cd"};
 void * (*hooked_Functions[])(void *) = {echo, pwd, cd};
+const int hooked_Size = sizeof(hooked)/sizeof(hooked[0]);
+
+char * early_Threadless_Hooked[] = {"quit", "exit"};
+void (*early_Threadless_Hooked_Functions[])() = {terminate, terminate};
+const int early_Threadless_Hooked_Size = sizeof(early_Threadless_Hooked)/sizeof(early_Threadless_Hooked[0]);
+
+void early_Threadless_Hook(struct commands * cs) {
+	for (int i = 0; i < cs->count; i++) {
+		struct command * c = &cs->commands[i];
+
+		for (int j = 0; j < early_Threadless_Hooked_Size; j++) {
+			if (!strcmp(c->executable, early_Threadless_Hooked[j])) {
+				early_Threadless_Hooked_Functions[j]();
+				return;
+			}
+		}
+	}
+}
 
 //Returns true if it was a hookable command
 bool hook(struct command * c) {
 	void * (* function)(void *);
 	bool proceed = false;
 
-	for (int i = 0; i < sizeof(hooked)/sizeof(hooked[0]); i++) {
+	for (int i = 0; i < hooked_Size; i++) {
 		if (!strcmp(c->executable, hooked[i])) {
 			proceed = true;
 

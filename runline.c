@@ -170,6 +170,7 @@ struct commands to_Struct_Format(char *** commands) {
 
 void execute_And_Free_Commands(char *** commands) {
 	struct commands cs = to_Struct_Format(commands);
+	early_Threadless_Hook(&cs);
 	runcmds(&cs);
 	free_Commands_Struct(&cs);
 	free_Commands(commands);
