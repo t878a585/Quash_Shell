@@ -46,6 +46,7 @@ void * echo(void * args) {
 	}
 	
 	fprintf(stdout_File, "\n");
+	fflush(stdout_File);
 
 	close_If_Not_Stdio(c->sti);
 	close_If_Not_Stdio(c->std);
