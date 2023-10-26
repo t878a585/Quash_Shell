@@ -9,6 +9,7 @@
 
 #include "parser_helper.h"
 #include "builtin.h"
+#include "export_builtin.h"
 
 void close_All_Pipes_But(int n, int * pipes, int pfd_One, int pfd_Two) {
 	for (int i = 0; i < n*2; i++) {
@@ -52,6 +53,8 @@ pid_t fork_And_Run(struct command * c, int pipes_Count, int * pipes, bool * pipe
 			close_All_Pipes_But(pipes_Count, pipes, c->std, c->sti);
 			free(pipes);
 		}
+		
+		set_Exports_In_Current_Process();
 		
 		execvp(c->executable, c->argv);
 	} else {

@@ -1,7 +1,7 @@
 C_FLAGS=-g3
 
-quash: parser.tab.o parser_helper.o lex.yy.o runline.o builtin.o
-	gcc parser.tab.o parser_helper.o lex.yy.o runline.o builtin.o -pthread -o quash
+quash: parser.tab.o parser_helper.o lex.yy.o runline.o builtin.o export_builtin.o
+	gcc parser.tab.o parser_helper.o lex.yy.o runline.o builtin.o export_builtin.o -pthread -o quash
 
 lex.yy.c : lex.l
 	flex lex.l

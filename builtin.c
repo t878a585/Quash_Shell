@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "shared_datatypes.h"
+#include "export_builtin.h"
 
 pthread_t * threads;
 int thread_Count = 0;
@@ -25,7 +26,7 @@ void append_Thread(pthread_t thread) {
 	threads = tmp;
 }
 
-void close_If_Not_Stdio(int fd) {
+static void close_If_Not_Stdio(int fd) {
 	if (fd != 0 && fd != 1) close(fd);
 }
 
@@ -86,12 +87,12 @@ void terminate() {
 	exit(0);
 }
 
-char * hooked[] = {"echo", "pwd", "cd"};
-void * (*hooked_Functions[])(void *) = {echo, pwd, cd};
+char * hooked[] = {"echo", "pwd", "cd", "export"};
+void * (*hooked_Functions[])(void *) = {echo, pwd, cd, export};
 const int hooked_Size = sizeof(hooked)/sizeof(hooked[0]);
 
-char * early_Threadless_Hooked[] = {"quit", "exit"};
-void (*early_Threadless_Hooked_Functions[])() = {terminate, terminate};
+char * early_Threadless_Hooked[] = {"quit", "exit", "export"};
+void (*early_Threadless_Hooked_Functions[])() = {terminate, terminate, export_Init};
 const int early_Threadless_Hooked_Size = sizeof(early_Threadless_Hooked)/sizeof(early_Threadless_Hooked[0]);
 
 void early_Threadless_Hook(struct commands * cs) {
