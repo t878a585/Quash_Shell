@@ -21,12 +21,10 @@ void export_Init() {
 
 char * query_Variable(char * variable) {
 	pthread_mutex_lock(&export_Variables_Lock);
-	
-	struct Variable * v;
 
 	for (int i = 0; i < variable_Count; i++) {
-		if (!strcmp(variable, v[i].var)) {
-			char * return_Value = strdup(v[i].value);
+		if (!strcmp(variable, variables[i].var)) {
+			char * return_Value = strdup(variables[i].value);
 
 			pthread_mutex_unlock(&export_Variables_Lock);
 
@@ -55,7 +53,7 @@ void add_Variable(char * variable, char * value) {
 		}
 	}
 
-	struct Variable * variables_New = (struct Variable *) malloc(sizeof(struct Variable *) * variable_Count + 1);
+	struct Variable * variables_New = (struct Variable *) malloc(sizeof(struct Variable) * (variable_Count + 1));
 	
 	for (int i = 0; i < variable_Count; i++) {
 		variables_New[i].var = variables[i].var;

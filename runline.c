@@ -20,9 +20,9 @@ void close_All_Pipes_But(int n, int * pipes, int pfd_One, int pfd_Two) {
 }
 
 bool * allocate_Pipes_Keep_Open(int pipes_Count) {
-	bool * keep_Open = malloc(sizeof(bool) * pipes_Count);
+	bool * keep_Open = malloc(sizeof(bool) * 2 * pipes_Count);
 
-	for (int i = 0; i < pipes_Count; i++) {
+	for (int i = 0; i < 2 * pipes_Count; i++) {
 		keep_Open[i] = false;
 	}
 
