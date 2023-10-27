@@ -7,11 +7,11 @@
 
 %%
 
-([^ \"'\|\\\n]|(\\[ ])|(\\\")|(\\')|(\\\|)|(\\\\)|(\\n))* { yylval.string = strdup(yytext); return NON_QUOTED_STRING; }
+([^ \"'\|\\\n]|(\\[ ])|(\\\")|(\\')|(\\\|)|(\\\\)|(\\n)|(\\\$))* { yylval.string = strdup(yytext); return NON_QUOTED_STRING; }
 
 '[^'\n]*' { yylval.string = strdup(yytext); return SINGLE_QUOTED_STRING;}
 
-\"([^\\\"\n]|(\\\")|(\\\\)|(\\n))*\" { yylval.string = strdup(yytext); return DOUBLE_QUOTED_STRING;}
+\"([^\\\"\n]|(\\\")|(\\\\)|(\\n)|(\\\$))*\" { yylval.string = strdup(yytext); return DOUBLE_QUOTED_STRING;}
 
 "|" { return PIPE;}
 

@@ -7,4 +7,6 @@ void * export(void * args);
 
 void set_Exports_In_Current_Process();
 
+char * query_Variable(char * variable);
+
 #endif

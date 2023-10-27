@@ -1,6 +1,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <regex.h>
+#include "export_builtin.h"
+#include "substitute.h"
 
 char * single_Quotes_To_String(char * string) {
         size_t length = strlen(string);
@@ -13,30 +16,37 @@ char * single_Quotes_To_String(char * string) {
 }
 
 char * double_Quotes_To_String(char * string) {
-	size_t length = strlen(string);
+	char * sstring = substitute(string);
+	size_t length = strlen(sstring);
 	char * buffer = (char *) malloc(sizeof(char) * (length - 1));
 
 	int j = 0;
 	for (int i = 1; i < length - 1; i++) {
-		if (i != length - 2 && string[i] == '\\' && string[i + 1] == '"') {
+		if (i != length - 2 && sstring[i] == '\\' && sstring[i + 1] == '"') {
 			buffer[j++] = '"';
 			i++;
 			continue;
 		}
 
-		if (i != length - 2 && string[i] == '\\' && string[i + 1] == '\\') {
+		if (i != length - 2 && sstring[i] == '\\' && sstring[i + 1] == '$') {
+			buffer[j++] = '$';
+			i++;
+			continue;
+		}
+
+		if (i != length - 2 && sstring[i] == '\\' && sstring[i + 1] == '\\') {
 			buffer[j++] = '\\';
 			i++;
 			continue;
 		}
 		
-		if (i != length - 2 && string[i] == '\\' && string[i + 1] == 'n') {
+		if (i != length - 2 && sstring[i] == '\\' && sstring[i + 1] == 'n') {
 			buffer[j++] = '\n';
 			i++;
 			continue;
 		}
 		
-		buffer[j++] = string[i];
+		buffer[j++] = sstring[i];
 	}
 
 	char * new_String = (char *) malloc(sizeof(char) * (j + 1));
@@ -44,61 +54,70 @@ char * double_Quotes_To_String(char * string) {
 	new_String[j] = '\0';
 
 	free((void *) buffer);
+	free((void *) sstring);
 	return new_String;
 }
 
 
 char * non_Quotes_To_String(char * string) {
-        size_t length = strlen(string);
+	char * sstring = substitute(string);
+        size_t length = strlen(sstring);
         char * buffer = (char *) malloc(sizeof(char) * (length + 1));
 
         int j = 0; 
         for (int i = 0; i < length; i++) {
-                if (i != length - 1 && string[i] == '\\' && string[i + 1] == ' ') {
+                if (i != length - 1 && sstring[i] == '\\' && sstring[i + 1] == ' ') {
                         buffer[j++] = ' ';
                         i++;
                         continue;
                 }
+		
+		if (i != length - 2 && sstring[i] == '\\' && sstring[i + 1] == '$') {
+			buffer[j++] = '$';
+			i++;
+			continue;
+		}
 
-                if (i != length - 1 && string[i] == '\\' && string[i + 1] == '"') {
+                if (i != length - 1 && sstring[i] == '\\' && sstring[i + 1] == '"') {
                         buffer[j++] = '"';
                         i++;
                         continue;
                 }
 
-		if (i != length - 1 && string[i] == '\\' && string[i + 1] == '\'') {
+		if (i != length - 1 && sstring[i] == '\\' && sstring[i + 1] == '\'') {
                         buffer[j++] = '\'';
                         i++;
                         continue;
                 }
 
 
-		if (i != length - 1 && string[i] == '\\' && string[i + 1] == '|') {
+		if (i != length - 1 && sstring[i] == '\\' && sstring[i + 1] == '|') {
                         buffer[j++] = '|';
                         i++;
                         continue;
                 }
 
 
-		if (i != length - 1 && string[i] == '\\' && string[i + 1] == '\\') {
+		if (i != length - 1 && sstring[i] == '\\' && sstring[i + 1] == '\\') {
                         buffer[j++] = '\\';
                         i++;
                         continue;
                 }
 
-		if (i != length - 1 && string[i] == '\\' && string[i + 1] == 'n') {
+		if (i != length - 1 && sstring[i] == '\\' && sstring[i + 1] == 'n') {
                         buffer[j++] = '\n';
                         i++;
                         continue;
                 }
 
-		buffer[j++] = string[i];
+		buffer[j++] = sstring[i];
         }
 
         char * new_String = (char *) malloc(sizeof(char) * (j + 1));
         strncpy(new_String, buffer, j);
         new_String[j] = '\0';
 
+	free((void *) sstring);
         free((void *) buffer);
         return new_String;
 	

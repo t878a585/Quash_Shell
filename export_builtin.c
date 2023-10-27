@@ -19,6 +19,26 @@ void export_Init() {
 	if (!export_Variables_Lock_Initialized) pthread_mutex_init(&export_Variables_Lock, NULL);
 }
 
+char * query_Variable(char * variable) {
+	pthread_mutex_lock(&export_Variables_Lock);
+	
+	struct Variable * v;
+
+	for (int i = 0; i < variable_Count; i++) {
+		if (!strcmp(variable, v[i].var)) {
+			char * return_Value = strdup(v[i].value);
+
+			pthread_mutex_unlock(&export_Variables_Lock);
+
+			return return_Value;
+		}
+	}
+
+	pthread_mutex_unlock(&export_Variables_Lock);
+
+	return (char *) 0;
+}
+
 void add_Variable(char * variable, char * value) {
 	pthread_mutex_lock(&export_Variables_Lock);
 	struct Variable * v;
@@ -86,7 +106,7 @@ void * export(void * args) {
 
 void set_Exports_In_Current_Process() {
 	pthread_mutex_lock(&export_Variables_Lock);
-	
+
 	for (int i = 0; i < variable_Count; i++) {
 		struct Variable * var = &variables[i];
 		setenv(var->var, var->value, 1);
